@@ -326,8 +326,23 @@ main {
 .card-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
     margin-bottom: 1.5rem;
+}
+
+.player-identity {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.player-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255, 70, 85, 0.3);
+    flex-shrink: 0;
 }
 
 .player-name {

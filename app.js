@@ -27,6 +27,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             clone.querySelector('.player-name').textContent = item.name;
             clone.querySelector('.team-badge').textContent = item.team;
 
+            // Set Avatar (using ui-avatars.com for initials-based pictures)
+            const avatar = clone.querySelector('.player-avatar');
+            const bgColor = item.category === 'pro' ? 'FF4655' : item.category === 'streamer' ? '6366f1' : '10b981';
+            avatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(item.name)}&background=${bgColor}&color=fff&size=56&bold=true&font-size=0.4`;
+            avatar.alt = item.name;
+
             // Handle Canvas Draw
             const canvas = clone.querySelector('canvas');
             const preview = clone.querySelector('.card-preview');
