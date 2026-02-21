@@ -519,8 +519,14 @@ footer {
 .range-bg {
     position: absolute;
     inset: 0;
-    background: radial-gradient(circle at 50% 40%, #2a3b4c 0%, #111822 80%);
     z-index: 1;
+}
+
+.bg-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
 }
 
 .floor-grid {
@@ -537,47 +543,33 @@ footer {
     transform-origin: bottom center;
 }
 
-/* Interactive Target Dummy */
+/* Interactive Target Dummy (Cypher) */
 .target-dummy-interactive {
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -19px);
-    /* Center head exactly on crosshair (head is 38px high) */
+    /* Cypher's portrait needs to be offset so his head is at the crosshair center */
+    transform: translate(-50%, -15%);
     z-index: 2;
     display: flex;
-    flex-direction: column;
+    justify-content: center;
     align-items: center;
     transition: transform 0.1s ease;
     transform-origin: bottom center;
+    width: 250px;
+    height: auto;
 }
 
-.dummy-head {
-    width: 38px;
-    height: 38px;
-    background: #2a3542;
-    border-radius: 50%;
-    box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.6), 0 5px 10px rgba(0, 0, 0, 0.5);
-    margin-bottom: 2px;
-    border: 1px solid #3c4b5c;
-}
-
-.dummy-body {
-    width: 60px;
-    height: 100px;
-    background: #3c4b5c;
-    border-radius: 20px 20px 5px 5px;
-    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5), 0 10px 30px rgba(0, 0, 0, 0.5);
-    border: 1px solid #4a5c6e;
-    position: relative;
-    overflow: hidden;
+.cypher-img {
+    width: 100%;
+    height: auto;
+    filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.5));
+    transition: all 0.1s ease;
 }
 
 /* Dummy Hit Flash */
-.target-dummy-interactive.hit .dummy-head,
-.target-dummy-interactive.hit .dummy-body {
-    background: rgba(255, 255, 255, 0.8);
-    box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+.target-dummy-interactive.hit .cypher-img {
+    filter: brightness(2) drop-shadow(0 0 20px rgba(255, 255, 255, 0.8));
 }
 
 /* Dummy Death Animation */
@@ -587,18 +579,21 @@ footer {
 
 @keyframes dummyDie {
     0% {
-        transform: translate(-50%, -19px) rotateX(0deg) scale(1);
+        transform: translate(-50%, -15%) rotateX(0deg) scale(1);
         opacity: 1;
+        filter: grayscale(0%);
     }
 
     40% {
         transform: translate(-50%, 0px) rotateX(-45deg) scale(0.9);
         opacity: 0.8;
+        filter: grayscale(50%);
     }
 
     100% {
-        transform: translate(-50%, 40px) rotateX(-90deg) scale(0.8);
+        transform: translate(-50%, 60px) rotateX(-90deg) scale(0.8);
         opacity: 0;
+        filter: grayscale(100%);
     }
 }
 
