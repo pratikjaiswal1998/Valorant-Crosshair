@@ -118,11 +118,35 @@
     <!-- Fullscreen In-Game Preview Modal -->
     <div id="previewModal" class="modal hidden">
         <div class="modal-content">
-            <!-- Simulated 'The Range' background -->
+            <!-- Realistic In-Game Background (Empty environment with Vandal) -->
             <div class="range-bg">
-                <div class="floor-grid"></div>
-                <!-- Simulated target dummy -->
-                <div class="target-dummy"></div>
+                <img src="valo-bg-vandal-empty.png" alt="In-Game Background" class="bg-img" />
+            </div>
+
+            <!-- Interactive Target Dummy -->
+            <div id="targetDummy" class="target-dummy-interactive">
+                <div class="dummy-head"></div>
+                <div class="dummy-body"></div>
+            </div>
+
+            <!-- Kill Banner UI (Hidden initially) -->
+            <div id="killBanner" class="kill-banner">
+                <div class="kill-icon">
+                    <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M50 10C27.9086 10 10 27.9086 10 50C10 72.0914 27.9086 90 50 90C72.0914 90 90 72.0914 90 50C90 27.9086 72.0914 10 50 10Z"
+                            fill="#ff4655" opacity="0.2" />
+                        <path
+                            d="M50 15C30.67 15 15 30.67 15 50C15 69.33 30.67 85 50 85C69.33 85 85 69.33 85 50C85 30.67 69.33 15 50 15Z"
+                            stroke="#ff4655" stroke-width="2" />
+                        <path d="M35 55L50 70L65 55" stroke="#ff4655" stroke-width="4" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                        <path d="M35 45L50 30L65 45" stroke="#ff4655" stroke-width="4" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
+                </div>
+                <div class="kill-text">ELIMINATED</div>
+                <div class="kill-name" id="killName">DUMMY</div>
             </div>
 
             <button class="close-modal-btn" title="Close Preview">

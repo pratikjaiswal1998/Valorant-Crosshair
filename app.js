@@ -197,7 +197,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderGrid(filtered);
     }
 
-    // Modal Logic
+    // Modal Elements - Kill Simulation
+    const targetDummy = document.getElementById('targetDummy');
+    const killBanner = document.getElementById('killBanner');
+    let killTimer = null;
+    let isDead = false;
+
     function openModal(item, config) {
         activeModalConfig = config;
         modalPlayerName.textContent = item.name;
@@ -209,11 +214,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         };
 
         modal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        document.body.style.overflow = 'hidden';
 
-        // Initial render
+        // Reset state
         modalSpread = 0;
         isFiring = false;
+        isDead = false;
+        targetDummy.classList.remove('dead', 'hit');
+        killBanner.classList.remove('active');
+        clearTimeout(killTimer);
+
         CrosshairRenderer.render(modalCanvas, activeModalConfig, modalSpread);
     }
 
@@ -223,6 +233,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         activeModalConfig = null;
         isFiring = false;
         if (modalAnimationId) cancelAnimationFrame(modalAnimationId);
+        clearTimeout(killTimer);
     }
 
     closeModalBtn.addEventListener('click', closeModal);
@@ -260,17 +271,47 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Handle Fire Button (Touch & Mouse)
     const startFiring = (e) => {
         e.preventDefault();
+        if (isDead) return; // Don't fire if already dead
+
         fireBtn.classList.remove('pulse-btn');
         fireBtn.style.transform = 'scale(0.95)';
         isFiring = true;
+        targetDummy.classList.add('hit');
+
         if (modalAnimationId) cancelAnimationFrame(modalAnimationId);
         simulateFire();
+
+        // Trigger kill after 600ms of sustained fire
+        killTimer = setTimeout(() => {
+            isDead = true;
+            isFiring = false;
+            targetDummy.classList.remove('hit');
+            targetDummy.classList.add('dead');
+            killBanner.classList.add('active');
+            fireBtn.style.transform = '';
+
+            // Audio cue (optional, using beep for now since we don't have assets)
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.3);
+                osc.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.3);
+            } catch (e) { }
+
+        }, 600);
     };
 
     const stopFiring = (e) => {
         e.preventDefault();
         fireBtn.style.transform = '';
         isFiring = false;
+        targetDummy.classList.remove('hit');
+        clearTimeout(killTimer);
+
         if (modalAnimationId) cancelAnimationFrame(modalAnimationId);
         simulateFire();
     };
