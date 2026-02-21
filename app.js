@@ -200,8 +200,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Modal Elements - Kill Simulation
     const targetDummy = document.getElementById('targetDummy');
     const killBanner = document.getElementById('killBanner');
+    const tracerContainer = document.getElementById('tracerContainer');
+    const muzzleFlash = document.getElementById('muzzleFlash');
+    const modalContent = document.querySelector('.modal-content');
+
     let killTimer = null;
     let isDead = false;
+    let fireInterval = null;
 
     function openModal(item, config) {
         activeModalConfig = config;
@@ -220,9 +225,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         modalSpread = 0;
         isFiring = false;
         isDead = false;
-        targetDummy.classList.remove('dead', 'hit');
+        targetDummy.classList.remove('dead', 'hit', 'headshot');
         killBanner.classList.remove('active');
+        muzzleFlash.classList.add('hidden');
+        modalContent.classList.remove('firing-shake');
+        tracerContainer.innerHTML = ''; // clear old tracers
         clearTimeout(killTimer);
+        clearInterval(fireInterval);
 
         CrosshairRenderer.render(modalCanvas, activeModalConfig, modalSpread);
     }
@@ -234,6 +243,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         isFiring = false;
         if (modalAnimationId) cancelAnimationFrame(modalAnimationId);
         clearTimeout(killTimer);
+        clearInterval(fireInterval);
+        muzzleFlash.classList.add('hidden');
+        modalContent.classList.remove('firing-shake');
     }
 
     closeModalBtn.addEventListener('click', closeModal);
@@ -277,32 +289,46 @@ document.addEventListener('DOMContentLoaded', async () => {
         fireBtn.style.transform = 'scale(0.95)';
         isFiring = true;
         targetDummy.classList.add('hit');
+        modalContent.classList.add('firing-shake');
+        muzzleFlash.classList.remove('hidden');
 
         if (modalAnimationId) cancelAnimationFrame(modalAnimationId);
         simulateFire();
 
-        // Trigger kill after 600ms of sustained fire
+        // Authentic Vandal Fire Rate (approx 9.75 bullets/sec)
+        // We'll spawn a tracer every 100ms
+        let bulletsFired = 0;
+        fireInterval = setInterval(() => {
+            if (isDead) return;
+            bulletsFired++;
+            playGunshotSound();
+            spawnTracer();
+
+            // Randomize muzzle flash intensity slightly
+            muzzleFlash.style.opacity = 0.5 + Math.random() * 0.5;
+            muzzleFlash.style.transform = `translate(50%, 50%) scale(${0.8 + Math.random() * 0.4})`;
+        }, 100);
+
+        // Immediate first bullet
+        playGunshotSound();
+        spawnTracer();
+
+        // Trigger kill after 500ms (approx 4 bodyshots / 1 headshot)
         killTimer = setTimeout(() => {
             isDead = true;
             isFiring = false;
+            clearInterval(fireInterval);
+
             targetDummy.classList.remove('hit');
             targetDummy.classList.add('dead');
             killBanner.classList.add('active');
+
             fireBtn.style.transform = '';
+            modalContent.classList.remove('firing-shake');
+            muzzleFlash.classList.add('hidden');
 
-            // Audio cue (optional, using beep for now since we don't have assets)
-            try {
-                const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                const osc = ctx.createOscillator();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(800, ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.3);
-                osc.connect(ctx.destination);
-                osc.start();
-                osc.stop(ctx.currentTime + 0.3);
-            } catch (e) { }
-
-        }, 600);
+            playKillSound();
+        }, 500);
     };
 
     const stopFiring = (e) => {
@@ -310,7 +336,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         fireBtn.style.transform = '';
         isFiring = false;
         targetDummy.classList.remove('hit');
+        modalContent.classList.remove('firing-shake');
+        muzzleFlash.classList.add('hidden');
+
         clearTimeout(killTimer);
+        clearInterval(fireInterval);
 
         if (modalAnimationId) cancelAnimationFrame(modalAnimationId);
         simulateFire();
@@ -321,6 +351,113 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     window.addEventListener('mouseup', () => { if (isFiring) stopFiring(new Event('')); });
     window.addEventListener('touchend', () => { if (isFiring) stopFiring(new Event('')); });
+
+    // Tracer Logic
+    function spawnTracer() {
+        const tracer = document.createElement('div');
+        tracer.classList.add('tracer');
+
+        // Spawn from bottom right (Vandal barrel) to center (crosshair)
+        // To make it dynamic, we add slight random spread to the angle based on modalSpread
+        const spreadOffset = (Math.random() - 0.5) * modalSpread * 2;
+
+        // Barrel position approximation
+        const barrelX = window.innerWidth * 0.75;
+        const barrelY = window.innerHeight * 0.85;
+        const targetX = window.innerWidth / 2 + spreadOffset;
+        const targetY = window.innerHeight / 2 + spreadOffset;
+
+        const angle = Math.atan2(targetY - barrelY, targetX - barrelX) * 180 / Math.PI;
+
+        tracer.style.left = `${barrelX}px`;
+        tracer.style.top = `${barrelY}px`;
+        tracer.style.transform = `rotate(${angle + 90}deg)`; // +90 because CSS gradient is upwards
+
+        tracerContainer.appendChild(tracer);
+
+        setTimeout(() => {
+            if (tracerContainer.contains(tracer)) {
+                tracerContainer.removeChild(tracer);
+            }
+        }, 150); // Remove after animation completes
+    }
+
+    // Audio Synthesis
+    let audioCtx = null;
+    function getAudioCtx() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        return audioCtx;
+    }
+
+    function playGunshotSound() {
+        try {
+            const ctx = getAudioCtx();
+            const osc = ctx.createOscillator();
+            const gainNode = ctx.createGain();
+
+            // Vandal-like punch sound
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(150, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + 0.1);
+
+            // Noise burst for the "bang"
+            const bufferSize = ctx.sampleRate * 0.1; // 100ms
+            const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                data[i] = Math.random() * 2 - 1;
+            }
+            const noise = ctx.createBufferSource();
+            noise.buffer = buffer;
+            const noiseFilter = ctx.createBiquadFilter();
+            noiseFilter.type = 'lowpass';
+            noiseFilter.frequency.value = 3000;
+
+            const noiseGain = ctx.createGain();
+            noiseGain.gain.setValueAtTime(1, ctx.currentTime);
+            noiseGain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+
+            gainNode.gain.setValueAtTime(0.5, ctx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+
+            osc.connect(gainNode);
+            gainNode.connect(ctx.destination);
+
+            noise.connect(noiseFilter);
+            noiseFilter.connect(noiseGain);
+            noiseGain.connect(ctx.destination);
+
+            osc.start();
+            noise.start();
+            osc.stop(ctx.currentTime + 0.1);
+            noise.stop(ctx.currentTime + 0.1);
+        } catch (e) { }
+    }
+
+    function playKillSound() {
+        try {
+            const ctx = getAudioCtx();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+
+            // Valorant kill sound (high pitched major chord sweep)
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(800, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.3);
+
+            gain.gain.setValueAtTime(0, ctx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.6, ctx.currentTime + 0.05);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            osc.start();
+            osc.stop(ctx.currentTime + 0.5);
+        } catch (e) { }
+    }
 
     // Toast logic
     let toastTimeout;

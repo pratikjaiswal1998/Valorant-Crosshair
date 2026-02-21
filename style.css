@@ -481,6 +481,22 @@ footer {
     justify-content: center;
     align-items: center;
     overflow: hidden;
+    transition: transform 0.05s linear;
+}
+
+/* Screen Shake (Recoil) */
+.modal-content.firing-shake {
+    animation: recoilShake 0.1s infinite alternate;
+}
+
+@keyframes recoilShake {
+    0% {
+        transform: translateY(0) translateX(0);
+    }
+
+    100% {
+        transform: translateY(-4px) translateX(2px);
+    }
 }
 
 /* Simulated Range Background */
@@ -505,32 +521,118 @@ footer {
     transform-origin: bottom center;
 }
 
-.target-dummy {
+/* Interactive Target Dummy */
+.target-dummy-interactive {
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
-    width: 60px;
-    height: 140px;
-    background: #3c4b5c;
-    border-radius: 30px 30px 10px 10px;
-    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5), 0 10px 30px rgba(0, 0, 0, 0.5);
-    filter: blur(1px);
-    /* Depth of field */
+    transform: translate(-50%, -19px);
+    /* Center head exactly on crosshair (head is 38px high) */
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: transform 0.1s ease;
+    transform-origin: bottom center;
 }
 
-/* Head of dummy */
-.target-dummy::before {
-    content: '';
-    position: absolute;
-    top: -45px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 40px;
-    height: 40px;
-    background: #4a5c6e;
+.dummy-head {
+    width: 38px;
+    height: 38px;
+    background: #2a3542;
     border-radius: 50%;
-    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+    box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.6), 0 5px 10px rgba(0, 0, 0, 0.5);
+    margin-bottom: 2px;
+    border: 1px solid #3c4b5c;
+}
+
+.dummy-body {
+    width: 60px;
+    height: 100px;
+    background: #3c4b5c;
+    border-radius: 20px 20px 5px 5px;
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5), 0 10px 30px rgba(0, 0, 0, 0.5);
+    border: 1px solid #4a5c6e;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Dummy Hit Flash */
+.target-dummy-interactive.hit .dummy-head,
+.target-dummy-interactive.hit .dummy-body {
+    background: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+}
+
+/* Dummy Death Animation */
+.target-dummy-interactive.dead {
+    animation: dummyDie 0.8s cubic-bezier(0.55, 0.085, 0.68, 0.53) forwards;
+}
+
+@keyframes dummyDie {
+    0% {
+        transform: translate(-50%, -19px) rotateX(0deg) scale(1);
+        opacity: 1;
+    }
+
+    40% {
+        transform: translate(-50%, 0px) rotateX(-45deg) scale(0.9);
+        opacity: 0.8;
+    }
+
+    100% {
+        transform: translate(-50%, 40px) rotateX(-90deg) scale(0.8);
+        opacity: 0;
+    }
+}
+
+/* Kill Banner UI */
+.kill-banner {
+    position: absolute;
+    bottom: 25%;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.kill-banner.active {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+    animation: killPulse 0.4s ease-out;
+}
+
+.kill-icon {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 0.5rem;
+    filter: drop-shadow(0 0 15px rgba(255, 70, 85, 0.6));
+}
+
+.kill-text {
+    font-family: inherit;
+    font-weight: 800;
+    font-size: 1.5rem;
+    color: var(--val-red);
+    letter-spacing: 0.2rem;
+    text-shadow: 0 0 10px rgba(255, 70, 85, 0.5);
+    background: linear-gradient(180deg, #fff 0%, var(--val-red) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.kill-name {
+    font-size: 1rem;
+    color: white;
+    font-weight: 600;
+    letter-spacing: 0.1rem;
+    margin-top: 0.2rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
 }
 
 .modal-canvas {
@@ -644,6 +746,56 @@ footer {
         transform: scale(1.1);
         opacity: 0;
     }
+}
+
+/* High-Fidelity Firing Effects */
+.tracer-container {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 8;
+    overflow: hidden;
+}
+
+.tracer {
+    position: absolute;
+    width: 3px;
+    height: 200px;
+    background: linear-gradient(to top, rgba(255, 255, 255, 0) 0%, rgba(255, 220, 150, 0.9) 50%, rgba(255, 255, 255, 1) 100%);
+    box-shadow: 0 0 15px rgba(255, 200, 100, 0.6);
+    transform-origin: bottom center;
+    pointer-events: none;
+    opacity: 0;
+    /* Tracers spawn from the gun barrel up to the crosshair */
+    animation: tracerShoot 0.15s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+}
+
+@keyframes tracerShoot {
+    0% {
+        transform: scaleY(0.2) translateY(0);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scaleY(1.5) translateY(-800px);
+        opacity: 0;
+    }
+}
+
+.muzzle-flash {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at 75% 85%, rgba(255, 180, 50, 0.35) 0%, rgba(255, 100, 0, 0.1) 30%, transparent 60%);
+    pointer-events: none;
+    z-index: 9;
+    mix-blend-mode: screen;
+}
+
+.muzzle-flash.hidden {
+    display: none;
 }
 
 /* Mobile Responsiveness for Modal */
