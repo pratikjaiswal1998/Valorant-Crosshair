@@ -308,6 +308,22 @@ main {
     background-size: 20px 20px;
 }
 
+.player-photo-bg {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 60%;
+    height: 100%;
+    object-fit: contain;
+    object-position: bottom right;
+    opacity: 0.15;
+    filter: grayscale(100%);
+    mix-blend-mode: screen;
+    pointer-events: none;
+    mask-image: linear-gradient(to right, transparent, black 40%);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 40%);
+}
+
 .card-preview canvas {
     position: relative;
     z-index: 2;

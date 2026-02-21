@@ -43,9 +43,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // Set Avatar (using ui-avatars.com for initials-based pictures)
             const avatar = clone.querySelector('.player-avatar');
+            const bgPhoto = clone.querySelector('.player-photo-bg');
             const bgColor = item.category === 'pro' ? 'FF4655' : item.category === 'streamer' ? '6366f1' : '10b981';
-            avatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(item.name)}&background=${bgColor}&color=fff&size=56&bold=true&font-size=0.4`;
+
+            const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(item.name)}&background=${bgColor}&color=fff&size=200&bold=true&font-size=0.4`;
+
+            avatar.src = avatarUrl;
             avatar.alt = item.name;
+
+            // Set the large translucent background photo
+            bgPhoto.src = avatarUrl;
+            bgPhoto.alt = `${item.name} background`;
 
             // Handle Canvas Draw
             const canvas = clone.querySelector('canvas');
