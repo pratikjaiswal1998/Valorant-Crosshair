@@ -6,6 +6,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     const toast = document.getElementById('toast');
     const teamPillsContainer = document.getElementById('teamPills');
 
+    // Modal Elements
+    const modal = document.getElementById('previewModal');
+    const modalCanvas = document.getElementById('modalCanvas');
+    const modalPlayerName = document.getElementById('modalPlayerName');
+    const modalPlayerTeam = document.getElementById('modalPlayerTeam');
+    const fireBtn = document.getElementById('fireBtn');
+    const modalCopyBtn = document.getElementById('modalCopyBtn');
+    const closeModalBtn = document.querySelector('.close-modal-btn');
+
+    let activeModalConfig = null;
+    let isFiring = false;
+    let modalSpread = 0;
+    let modalAnimationId = null;
+
     let activeTeam = null; // Currently selected team filter
 
     // Use locally loaded data to avoid CORS issues when opening file:// directly
@@ -68,6 +82,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                     targetSpread = 0;
                     if (animationId) cancelAnimationFrame(animationId);
                     animate();
+                });
+
+                // Launch Modal
+                preview.addEventListener('click', () => {
+                    openModal(item, config);
                 });
             } catch (e) {
                 console.error("Failed to render crosshair for", item.name, e);
@@ -177,6 +196,90 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
         renderGrid(filtered);
     }
+
+    // Modal Logic
+    function openModal(item, config) {
+        activeModalConfig = config;
+        modalPlayerName.textContent = item.name;
+        modalPlayerTeam.textContent = item.team;
+
+        // Setup copy button for modal
+        modalCopyBtn.onclick = () => {
+            navigator.clipboard.writeText(item.code).then(() => showToast());
+        };
+
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden'; // Prevent background scrolling
+
+        // Initial render
+        modalSpread = 0;
+        isFiring = false;
+        CrosshairRenderer.render(modalCanvas, activeModalConfig, modalSpread);
+    }
+
+    function closeModal() {
+        modal.classList.add('hidden');
+        document.body.style.overflow = '';
+        activeModalConfig = null;
+        isFiring = false;
+        if (modalAnimationId) cancelAnimationFrame(modalAnimationId);
+    }
+
+    closeModalBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal || e.target.classList.contains('range-bg') || e.target.classList.contains('modal-content')) {
+            closeModal();
+        }
+    });
+
+    // Firing Simulation Loop
+    function simulateFire() {
+        if (!activeModalConfig) return;
+
+        const maxSpread = 15;
+        const targetSpread = isFiring ? maxSpread : 0;
+
+        // Firing spread is fast (recoil kick), recovery is slower
+        const diff = targetSpread - modalSpread;
+        if (isFiring) {
+            modalSpread += diff * 0.4;
+        } else {
+            modalSpread += diff * 0.15;
+        }
+
+        CrosshairRenderer.render(modalCanvas, activeModalConfig, modalSpread);
+
+        if (Math.abs(diff) > 0.1) {
+            modalAnimationId = requestAnimationFrame(simulateFire);
+        } else {
+            modalSpread = targetSpread;
+            CrosshairRenderer.render(modalCanvas, activeModalConfig, modalSpread);
+        }
+    }
+
+    // Handle Fire Button (Touch & Mouse)
+    const startFiring = (e) => {
+        e.preventDefault();
+        fireBtn.classList.remove('pulse-btn');
+        fireBtn.style.transform = 'scale(0.95)';
+        isFiring = true;
+        if (modalAnimationId) cancelAnimationFrame(modalAnimationId);
+        simulateFire();
+    };
+
+    const stopFiring = (e) => {
+        e.preventDefault();
+        fireBtn.style.transform = '';
+        isFiring = false;
+        if (modalAnimationId) cancelAnimationFrame(modalAnimationId);
+        simulateFire();
+    };
+
+    fireBtn.addEventListener('mousedown', startFiring);
+    fireBtn.addEventListener('touchstart', startFiring);
+
+    window.addEventListener('mouseup', () => { if (isFiring) stopFiring(new Event('')); });
+    window.addEventListener('touchend', () => { if (isFiring) stopFiring(new Event('')); });
 
     // Toast logic
     let toastTimeout;

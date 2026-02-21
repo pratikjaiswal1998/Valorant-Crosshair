@@ -81,11 +81,17 @@
     <!-- Template for crosshair cards -->
     <template id="cardTemplate">
         <div class="card">
-            <div class="card-preview">
+            <div class="card-preview" title="Click for In-Game Preview">
                 <!-- SVG Grid Background -->
                 <div class="preview-bg"></div>
                 <!-- Canvas for drawing crosshair -->
                 <canvas width="200" height="200"></canvas>
+                <div class="preview-overlay">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path>
+                    </svg>
+                </div>
             </div>
             <div class="card-info">
                 <div class="card-header">
@@ -108,6 +114,59 @@
             </div>
         </div>
     </template>
+
+    <!-- Fullscreen In-Game Preview Modal -->
+    <div id="previewModal" class="modal hidden">
+        <div class="modal-content">
+            <!-- Simulated 'The Range' background -->
+            <div class="range-bg">
+                <div class="floor-grid"></div>
+                <!-- Simulated target dummy -->
+                <div class="target-dummy"></div>
+            </div>
+
+            <button class="close-modal-btn" title="Close Preview">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+
+            <!-- Crosshair overlay -->
+            <canvas id="modalCanvas" class="modal-canvas" width="800" height="800"></canvas>
+
+            <!-- Bottom controls -->
+            <div class="modal-controls">
+                <div class="modal-player-info">
+                    <h2 id="modalPlayerName">TenZ</h2>
+                    <span id="modalPlayerTeam" class="team-badge">SEN</span>
+                </div>
+
+                <div class="modal-actions">
+                    <button id="fireBtn" class="primary-btn pulse-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <circle cx="12" cy="12" r="4"></circle>
+                            <line x1="21.17" y1="8" x2="12" y2="8"></line>
+                            <line x1="3.95" y1="6.06" x2="8.54" y2="14"></line>
+                            <line x1="10.88" y1="21.94" x2="15.46" y2="14"></line>
+                        </svg>
+                        Hold to Fire
+                    </button>
+                    <button id="modalCopyBtn" class="copy-btn">
+                        <span>Copy Code</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="data.js"></script>
     <script src="crosshair-parser.js"></script>
