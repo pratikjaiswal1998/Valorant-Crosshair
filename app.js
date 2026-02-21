@@ -259,31 +259,43 @@ document.addEventListener('DOMContentLoaded', async () => {
     function simulateFire() {
         if (!activeModalConfig) return;
 
-        const maxSpread = 15;
+        const maxSpread = 12; // Slightly reduced max spread for realism
         const targetSpread = isFiring ? maxSpread : 0;
 
-        // Firing spread is fast (recoil kick), recovery is slower
+        // Spread blooms slower (authentic recoil feeling), recovery is smooth
         const diff = targetSpread - modalSpread;
         if (isFiring) {
-            modalSpread += diff * 0.4;
+            modalSpread += diff * 0.08;
         } else {
-            modalSpread += diff * 0.15;
+            modalSpread += diff * 0.12;
         }
 
         CrosshairRenderer.render(modalCanvas, activeModalConfig, modalSpread);
+
+        // Vertical recoil kick: crosshair moves UP as spread increases
+        const recoilY = -(modalSpread * 1.8);
+        modalCanvas.style.transform = `scale(1) translateY(${recoilY}px)`;
 
         if (Math.abs(diff) > 0.1) {
             modalAnimationId = requestAnimationFrame(simulateFire);
         } else {
             modalSpread = targetSpread;
             CrosshairRenderer.render(modalCanvas, activeModalConfig, modalSpread);
+            const finalRecoilY = isFiring ? -(maxSpread * 1.8) : 0;
+            modalCanvas.style.transform = `scale(1) translateY(${finalRecoilY}px)`;
         }
     }
 
     // Handle Fire Button (Touch & Mouse)
     const startFiring = (e) => {
         e.preventDefault();
-        if (isDead) return; // Don't fire if already dead
+
+        // Auto-reset if the dummy was already killed
+        if (isDead) {
+            isDead = false;
+            targetDummy.classList.remove('dead', 'hit');
+            killBanner.classList.remove('active');
+        }
 
         fireBtn.classList.remove('pulse-btn');
         fireBtn.style.transform = 'scale(0.95)';
