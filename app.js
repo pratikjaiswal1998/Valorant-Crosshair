@@ -11,7 +11,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const modalCanvas = document.getElementById('modalCanvas');
     const modalPlayerName = document.getElementById('modalPlayerName');
     const modalPlayerTeam = document.getElementById('modalPlayerTeam');
-    const fireBtn = document.getElementById('fireBtn');
     const modalCopyBtn = document.getElementById('modalCopyBtn');
     const closeModalBtn = document.querySelector('.close-modal-btn');
 
@@ -294,9 +293,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Handle Fire Button (Touch & Mouse)
+    // Handle Screen-Wide Firing (Touch & Mouse)
     const startFiring = (e) => {
-        e.preventDefault();
+        // Ignore clicks on buttons inside the modal (like Copy Code or Close)
+        if (e.target.closest('button') || e.target.closest('a')) return;
+
+        // Prevent default text selection/drag behaviors
+        if (e.cancelable) e.preventDefault();
 
         // Auto-reset if the dummy was already killed
         if (isDead) {
@@ -305,8 +308,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             killBanner.classList.remove('active');
         }
 
-        fireBtn.classList.remove('pulse-btn');
-        fireBtn.style.transform = 'scale(0.95)';
         isFiring = true;
         targetDummy.classList.add('hit');
         modalContent.classList.add('firing-shake');
@@ -343,7 +344,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             targetDummy.classList.add('dead');
             killBanner.classList.add('active');
 
-            fireBtn.style.transform = '';
             modalContent.classList.remove('firing-shake');
             muzzleFlash.classList.add('hidden');
 
@@ -352,8 +352,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     const stopFiring = (e) => {
-        e.preventDefault();
-        fireBtn.style.transform = '';
+        if (!isFiring) return;
         isFiring = false;
         targetDummy.classList.remove('hit');
         modalContent.classList.remove('firing-shake');
@@ -366,11 +365,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         simulateFire();
     };
 
-    fireBtn.addEventListener('mousedown', startFiring);
-    fireBtn.addEventListener('touchstart', startFiring);
+    // Attach to the entire modal content area
+    const modalContentWrapper = document.querySelector('.modal-content');
+    modalContentWrapper.addEventListener('mousedown', startFiring);
+    modalContentWrapper.addEventListener('touchstart', startFiring, { passive: false });
 
-    window.addEventListener('mouseup', () => { if (isFiring) stopFiring(new Event('')); });
-    window.addEventListener('touchend', () => { if (isFiring) stopFiring(new Event('')); });
+    window.addEventListener('mouseup', stopFiring);
+    window.addEventListener('touchend', stopFiring);
 
     // Tracer Logic
     function spawnTracer() {
