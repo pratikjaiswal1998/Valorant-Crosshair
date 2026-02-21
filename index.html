@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Valorant Crosshair Catalogue</title>
+    <meta name="description"
+        content="Browse, preview, and copy popular Valorant crosshairs used by professionals and top players.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div id="toast" class="toast hidden">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+        <span>Crosshair code copied!</span>
+    </div>
+
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <svg width="32" height="32" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M99.25 48.66V10H60.59L99.25 48.66Z" fill="#FF4655" />
+                    <path d="M58.32 10H0.75V48.66L28.18 76.09L58.32 45.95V10Z" fill="#FF4655" />
+                </svg>
+                <h1>Valorant <span>Crosshairs</span></h1>
+            </div>
+            <p>Browse, preview, and copy top pro crosshairs instantly.</p>
+        </div>
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="Search by player or team...">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+        </div>
+    </header>
+
+    <main>
+        <div class="filters">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="popular">Trending</button>
+            <button class="filter-btn" data-filter="pro">Pro Players</button>
+            <button class="filter-btn" data-filter="fun">Fun/Custom</button>
+            <button class="filter-btn bg-toggle-btn" id="bgToggle" title="Toggle Background">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="5"></circle>
+                    <line x1="12" y1="1" x2="12" y2="3"></line>
+                    <line x1="12" y1="21" x2="12" y2="23"></line>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                    <line x1="1" y1="12" x2="3" y2="12"></line>
+                    <line x1="21" y1="12" x2="23" y2="12"></line>
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                </svg>
+            </button>
+        </div>
+
+        <div id="crosshairGrid" class="crosshair-grid">
+            <!-- Cards will be injected here via JS -->
+            <div class="loading-state">Loading popular crosshairs...</div>
+        </div>
+    </main>
+
+    <footer>
+        <p>Built for the Valorant community. Crosshairs may look slightly different in-game based on resolution.</p>
+    </footer>
+
+    <!-- Template for crosshair cards -->
+    <template id="cardTemplate">
+        <div class="card">
+            <div class="card-preview">
+                <!-- SVG Grid Background -->
+                <div class="preview-bg"></div>
+                <!-- Canvas for drawing crosshair -->
+                <canvas width="200" height="200"></canvas>
+            </div>
+            <div class="card-info">
+                <div class="card-header">
+                    <h3 class="player-name">Player Name</h3>
+                    <span class="team-badge">Team</span>
+                </div>
+                <div class="card-actions">
+                    <button class="copy-btn" title="Copy Code">
+                        <span>Copy Code</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <script src="data.js"></script>
+    <script src="crosshair-parser.js"></script>
+    <script src="crosshair-renderer.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
