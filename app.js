@@ -4,6 +4,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const filterBtns = document.querySelectorAll('.filter-btn');
     const searchInput = document.getElementById('searchInput');
     const toast = document.getElementById('toast');
+    const teamPillsContainer = document.getElementById('teamPills');
+
+    let activeTeam = null; // Currently selected team filter
 
     // Use locally loaded data to avoid CORS issues when opening file:// directly
     let crosshairsData = window.CROSSHAIRS_DATA || [];
@@ -85,9 +88,57 @@ document.addEventListener('DOMContentLoaded', async () => {
             filterBtns.forEach(b => b.classList.remove('active'));
             e.currentTarget.classList.add('active');
 
+            activeTeam = null; // Reset team filter on category change
+            updateTeamPills(category);
             filterData(category, searchInput.value);
         });
     });
+
+    // Team Pills Logic
+    function updateTeamPills(category) {
+        if (category !== 'pro') {
+            teamPillsContainer.classList.add('hidden');
+            teamPillsContainer.innerHTML = '';
+            return;
+        }
+
+        // Extract unique teams from pro players
+        const proTeams = [...new Set(
+            crosshairsData
+                .filter(item => item.category === 'pro')
+                .map(item => item.team)
+        )].sort();
+
+        teamPillsContainer.innerHTML = '';
+
+        // "All Teams" pill
+        const allPill = document.createElement('button');
+        allPill.className = 'team-pill active';
+        allPill.textContent = 'All Teams';
+        allPill.addEventListener('click', () => {
+            activeTeam = null;
+            teamPillsContainer.querySelectorAll('.team-pill').forEach(p => p.classList.remove('active'));
+            allPill.classList.add('active');
+            filterData('pro', searchInput.value);
+        });
+        teamPillsContainer.appendChild(allPill);
+
+        // Individual team pills
+        proTeams.forEach(team => {
+            const pill = document.createElement('button');
+            pill.className = 'team-pill';
+            pill.textContent = team;
+            pill.addEventListener('click', () => {
+                activeTeam = team;
+                teamPillsContainer.querySelectorAll('.team-pill').forEach(p => p.classList.remove('active'));
+                pill.classList.add('active');
+                filterData('pro', searchInput.value);
+            });
+            teamPillsContainer.appendChild(pill);
+        });
+
+        teamPillsContainer.classList.remove('hidden');
+    }
 
     // Searching
     searchInput.addEventListener('input', (e) => {
@@ -114,8 +165,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         const term = searchTerm.toLowerCase();
         const filtered = crosshairsData.filter(item => {
             const matchesCategory = category === 'all' || item.category === category;
+            const matchesTeam = !activeTeam || item.team === activeTeam;
             const matchesSearch = item.name.toLowerCase().includes(term) || item.team.toLowerCase().includes(term);
-            return matchesCategory && matchesSearch;
+            return matchesCategory && matchesTeam && matchesSearch;
         });
         renderGrid(filtered);
     }

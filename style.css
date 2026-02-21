@@ -174,6 +174,59 @@ main {
     border-color: var(--text-main);
 }
 
+/* Team Pills */
+.team-pills {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    animation: fadeSlideIn 0.3s ease;
+}
+
+.team-pills.hidden {
+    display: none;
+}
+
+.team-pill {
+    background: rgba(255, 70, 85, 0.08);
+    border: 1px solid rgba(255, 70, 85, 0.15);
+    color: var(--text-muted);
+    padding: 0.35rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.8rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: all 0.2s ease;
+}
+
+.team-pill:hover {
+    background: rgba(255, 70, 85, 0.15);
+    color: var(--text-main);
+    border-color: rgba(255, 70, 85, 0.3);
+}
+
+.team-pill.active {
+    background: var(--val-red);
+    color: white;
+    border-color: var(--val-red);
+}
+
+@keyframes fadeSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /* Grid */
 .crosshair-grid {
     display: grid;
